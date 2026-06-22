@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.env
+venv/
+logs/*.log
+data/raw_air_quality.csv
+data/processed_air_quality.csv

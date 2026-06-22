@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Model Metrics</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; }
+    header { background: linear-gradient(135deg, #0c4a6e, #065f46); padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; }
+    header h1 { font-size: 1.4rem; font-weight: 700; }
+    nav a { color: #bfdbfe; text-decoration: none; margin-left: 20px; font-size: 0.9rem; }
+    .container { max-width: 960px; margin: 40px auto; padding: 0 20px; }
+    .card { background: #1e293b; border-radius: 12px; padding: 28px; border: 1px solid #334155; margin-bottom: 24px; }
+    .card h2 { color: #93c5fd; font-size: 1rem; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; }
+    .metric-box { background: #0f172a; border-radius: 10px; padding: 20px; text-align: center; border: 1px solid #1e3a5f; }
+    .metric-box .value { font-size: 1.9rem; font-weight: 800; color: #22d3ee; }
+    .metric-box .label { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; text-transform: uppercase; }
+    .fi-row { margin-bottom: 12px; }
+    .fi-label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px; }
+    .fi-label span { color: #94a3b8; }
+    .fi-bar-wrap { background: #0f172a; border-radius: 4px; height: 8px; overflow: hidden; }
+    .fi-bar { height: 100%; background: linear-gradient(90deg, #0891b2, #065f46); border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th { text-align: left; color: #94a3b8; padding: 8px 12px; border-bottom: 1px solid #334155; }
+    td { padding: 10px 12px; border-bottom: 1px solid #1e293b; }
+    .best td { color: #4ade80; font-weight: 700; }
+    footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 30px; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>🌿 Air Quality India Dashboard</h1>
+  <nav><a href="/">Dashboard</a><a href="/predict">Predict AQI</a><a href="/metrics">Model Metrics</a></nav>
+</header>
+
+<div class="container">
+  <div class="card">
+    <h2>🏆 Best Model: {{ report.model_name }}</h2>
+    <div class="metrics-grid">
+      <div class="metric-box">
+        <div class="value">{{ report.test_metrics.rmse }}</div>
+        <div class="label">RMSE</div>
+      </div>
+      <div class="metric-box">
+        <div class="value">{{ report.test_metrics.mae }}</div>
+        <div class="label">MAE</div>
+      </div>
+      <div class="metric-box">
+        <div class="value">{{ report.test_metrics.r2_score }}</div>
+        <div class="label">R² Score</div>
+      </div>
+      <div class="metric-box">
+        <div class="value">{{ report.test_metrics.within_1_aqi_accuracy }}%</div>
+        <div class="label">Within ±1 AQI</div>
+      </div>
+    </div>
+  </div>
+
+  {% if report.top_features %}
+  <div class="card">
+    <h2>📈 Top Feature Importances</h2>
+    {% set max_val = report.top_features.values() | list | max %}
+    {% for feature, importance in report.top_features.items() %}
+    <div class="fi-row">
+      <div class="fi-label">
+        <span>{{ feature }}</span>
+        <span>{{ (importance * 100) | round(2) }}%</span>
+      </div>
+      <div class="fi-bar-wrap">
+        <div class="fi-bar" style="width: {{ ((importance / max_val) * 100) | round(1) }}%"></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if report.model_comparison %}
+  <div class="card">
+    <h2>⚖️ Model Comparison (CV RMSE — lower is better)</h2>
+    <table>
+      <thead><tr><th>Model</th><th>CV RMSE</th></tr></thead>
+      <tbody>
+        {% for name, stats in report.model_comparison.items() %}
+        <tr {% if name == report.model_name %}class="best"{% endif %}>
+          <td>{{ name }} {% if name == report.model_name %}★{% endif %}</td>
+          <td>{{ stats.cv_rmse }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+<footer>Air Quality Forecasting System · OpenWeatherMap API · ML Pipeline</footer>
+</body>
+</html>

@@ -1,0 +1,73 @@
+api:
+  key: "4e4a9b3b3117762917651e612ae143d4"
+  base_url: "http://api.openweathermap.org/data/2.5/air_pollution"
+  history_url: "http://api.openweathermap.org/data/2.5/air_pollution/history"
+
+cities:
+  - name: "Delhi"
+    lat: 28.6139
+    lon: 77.2090
+  - name: "Mumbai"
+    lat: 19.0760
+    lon: 72.8777
+  - name: "Bengaluru"
+    lat: 12.9716
+    lon: 77.5946
+  - name: "Hyderabad"
+    lat: 17.3850
+    lon: 78.4867
+  - name: "Chennai"
+    lat: 13.0827
+    lon: 80.2707
+  - name: "Kolkata"
+    lat: 22.5726
+    lon: 88.3639
+  - name: "Warangal"
+    lat: 17.9784
+    lon: 79.5941
+  - name: "Pune"
+    lat: 18.5204
+    lon: 73.8567
+  - name: "Ahmedabad"
+    lat: 23.0225
+    lon: 72.5714
+  - name: "Jaipur"
+    lat: 26.9124
+    lon: 75.7873
+
+data:
+  raw_path: "data/raw_air_quality.csv"
+  processed_path: "data/processed_air_quality.csv"
+  history_days: 7
+
+target_column: "aqi"
+
+validation:
+  max_null_percent: 10.0
+  aqi_min: 1
+  aqi_max: 5
+  required_columns:
+    - city
+    - aqi
+    - co
+    - "no"
+    - no2
+    - o3
+    - so2
+    - pm2_5
+    - pm10
+    - nh3
+    - timestamp
+
+model:
+  artifacts_dir: "artifacts"
+  model_path: "artifacts/model.pkl"
+  scaler_path: "artifacts/scaler.pkl"
+  report_path: "artifacts/evaluation_report.json"
+  test_size: 0.2
+  random_state: 42
+  cv_folds: 5
+
+logging:
+  log_file: "logs/pipeline.log"
+  level: "INFO"

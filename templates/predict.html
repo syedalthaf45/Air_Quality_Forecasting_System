@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Predict AQI</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; }
+    header { background: linear-gradient(135deg, #0c4a6e, #065f46); padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; }
+    header h1 { font-size: 1.4rem; font-weight: 700; }
+    nav a { color: #bfdbfe; text-decoration: none; margin-left: 20px; font-size: 0.9rem; }
+    .container { max-width: 760px; margin: 40px auto; padding: 0 20px; }
+    .card { background: #1e293b; border-radius: 12px; padding: 28px; border: 1px solid #334155; margin-bottom: 24px; }
+    .card h2 { color: #93c5fd; font-size: 1rem; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 0.78rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+    input, select { background: #0f172a; border: 1px solid #475569; border-radius: 8px; padding: 10px 12px; color: #e2e8f0; font-size: 0.95rem; outline: none; }
+    input:focus, select:focus { border-color: #22d3ee; }
+    .btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #0891b2, #065f46); border: none; border-radius: 10px; color: #fff; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 8px; }
+    .result-card { border-radius: 16px; padding: 36px; text-align: center; border: 2px solid; margin-bottom: 24px; }
+    .result-card .aqi-num { font-size: 3rem; font-weight: 800; }
+    .result-card .label { font-size: 1.3rem; font-weight: 700; margin-top: 8px; }
+    .hint { font-size: 0.78rem; color: #64748b; margin-top: 4px; }
+    footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 30px; }
+    .back { display: inline-block; padding: 10px 24px; background: #1e293b; border-radius: 8px; color: #93c5fd; text-decoration: none; font-size: 0.9rem; border: 1px solid #334155; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>🌿 Air Quality India Dashboard</h1>
+  <nav><a href="/">Dashboard</a><a href="/predict">Predict AQI</a><a href="/metrics">Model Metrics</a></nav>
+</header>
+
+<div class="container">
+  {% if result and not result.error %}
+  <div class="result-card" style="background:#0f172a; border-color:{{ result.aqi_color }}">
+    <div class="aqi-num" style="color:{{ result.aqi_color }}">AQI {{ result.predicted_aqi }}</div>
+    <div class="label" style="color:{{ result.aqi_color }}">{{ result.aqi_label }}</div>
+    <p style="color:#94a3b8; margin-top:12px">City: {{ result.city }} · Raw score: {{ result.raw_prediction }}</p>
+  </div>
+  {% elif result and result.error %}
+  <div style="background:#450a0a;border:1px solid #b91c1c;border-radius:8px;padding:12px 16px;color:#fca5a5;margin-bottom:20px">⚠️ {{ result.error }}</div>
+  {% endif %}
+
+  <div class="card">
+    <h2>🔬 Enter Pollutant Readings</h2>
+    <form method="POST" action="/predict">
+      <div class="grid" style="margin-bottom:20px">
+        <div class="field">
+          <label>City</label>
+          <select name="city">
+            {% for c in cities %}
+            <option value="{{ c }}">{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>PM2.5 (µg/m³)</label>
+          <input type="number" name="pm2_5" value="35" step="0.1"/>
+          <span class="hint">Fine particles — major AQI driver</span>
+        </div>
+        <div class="field">
+          <label>PM10 (µg/m³)</label>
+          <input type="number" name="pm10" value="50" step="0.1"/>
+        </div>
+        <div class="field">
+          <label>NO₂ (µg/m³)</label>
+          <input type="number" name="no2" value="20" step="0.1"/>
+        </div>
+        <div class="field">
+          <label>O₃ (µg/m³)</label>
+          <input type="number" name="o3" value="60" step="0.1"/>
+        </div>
+        <div class="field">
+          <label>CO (µg/m³)</label>
+          <input type="number" name="co" value="200" step="1"/>
+        </div>
+        <div class="field">
+          <label>SO₂ (µg/m³)</label>
+          <input type="number" name="so2" value="10" step="0.1"/>
+        </div>
+      </div>
+      <button type="submit" class="btn">🔍 Predict AQI Category</button>
+    </form>
+  </div>
+
+  <div class="card" style="font-size:0.85rem; color:#94a3b8; line-height:1.8">
+    <h2>📊 AQI Scale Reference</h2>
+    <p>1 — <span style="color:#16a34a">Good</span> &nbsp;|&nbsp; 2 — <span style="color:#65a30d">Fair</span> &nbsp;|&nbsp; 3 — <span style="color:#ca8a04">Moderate</span> &nbsp;|&nbsp; 4 — <span style="color:#ea580c">Poor</span> &nbsp;|&nbsp; 5 — <span style="color:#dc2626">Very Poor</span></p>
+  </div>
+
+  <a href="/" class="back">← Back to Dashboard</a>
+</div>
+<footer>Air Quality Forecasting System · OpenWeatherMap API · ML Pipeline</footer>
+</body>
+</html>
